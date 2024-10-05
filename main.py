@@ -19,6 +19,7 @@ NUM_FRAMES_ATTACK_2 = 6  # Number of frames for player 2 attack animation
 
 DIR = path.dirname(path.abspath(__file__))
 
+
 class MainMenu(arcade.View):
     """ Main Menu View """
 
@@ -92,6 +93,11 @@ class GameBoard(arcade.View):
         self.is_player2_attacking = False
         self.player1_attack_time = 0
         self.player2_attack_time = 0
+        self.player1_health = 100  # Health variable for player 1
+        self.player2_health = 100  # Health variable for player 2
+        self.attack_damage = 10  # Damage dealt during an attack
+        self.player1_has_dealt_damage = False  # Track if player 1 has dealt damage
+        self.player2_has_dealt_damage = False  # Track if player 2 has dealt damage
 
     def setup(self):
         """ Set up the main game here """
@@ -176,23 +182,8 @@ class GameBoard(arcade.View):
         self.player2.change_y -= GRAVITY
         self.player_list.update()
 
-        # Manage attack timer for Player 1
-        if self.is_player1_attacking:
-            self.player1_attack_time += delta_time
-            self.player1.update_animation(delta_time)
-            if self.player1_attack_time > NUM_FRAMES_ATTACK_1 * 0.1:
-                self.is_player1_attacking = False
-                self.player1_attack_time = 0
-                self.player1.frames = self.player1_walk_frames
-
-        # Manage attack timer for Player 2
-        if self.is_player2_attacking:
-            self.player2_attack_time += delta_time
-            self.player2.update_animation(delta_time)
-            if self.player2_attack_time > NUM_FRAMES_ATTACK_2 * 0.1:
-                self.is_player2_attacking = False
-                self.player2_attack_time = 0
-                self.player2.frames = self.player2_walk_frames
+        # Manage attacks and check for damage
+        self.manage_attacks(delta_time)
 
         if not self.is_player1_attacking and self.player1.change_x != 0:
             self.player1.update_animation(delta_time)
@@ -217,6 +208,45 @@ class GameBoard(arcade.View):
             self.player2.left = 0
         if self.player2.right > 1000:
             self.player2.right = 1000
+
+    def manage_attacks(self, delta_time):
+        """Handle attack logic and damage"""
+
+        # Player 1 attack logic
+        if self.is_player1_attacking:
+            self.player1_attack_time += delta_time
+            self.player1.update_animation(delta_time)
+
+            # Check if Player 1 hit Player 2
+            if arcade.check_for_collision(self.player1, self.player2) and not self.player1_has_dealt_damage:
+                self.player2_health -= self.attack_damage
+                self.player1_has_dealt_damage = True  # Mark damage as dealt
+                print(f"Player 2 hit! Health: {self.player2_health}")
+
+            # Reset after attack completes
+            if self.player1_attack_time > NUM_FRAMES_ATTACK_1 * 0.1:
+                self.is_player1_attacking = False
+                self.player1_attack_time = 0
+                self.player1.frames = self.player1_walk_frames
+                self.player1_has_dealt_damage = False  # Reset damage flag
+
+        # Player 2 attack logic
+        if self.is_player2_attacking:
+            self.player2_attack_time += delta_time
+            self.player2.update_animation(delta_time)
+
+            # Check if Player 2 hit Player 1
+            if arcade.check_for_collision(self.player2, self.player1) and not self.player2_has_dealt_damage:
+                self.player1_health -= self.attack_damage
+                self.player2_has_dealt_damage = True  # Mark damage as dealt
+                print(f"Player 1 hit! Health: {self.player1_health}")
+
+            # Reset after attack completes
+            if self.player2_attack_time > NUM_FRAMES_ATTACK_2 * 0.1:
+                self.is_player2_attacking = False
+                self.player2_attack_time = 0
+                self.player2.frames = self.player2_walk_frames
+                self.player2_has_dealt_damage = False  # Reset damage flag
 
     def on_key_press(self, key, modifiers):
         # Player 2 movement and attack (Arrow keys + "O")
@@ -303,7 +333,7 @@ class HowTo(arcade.View):
         )
 
         arcade.draw_texture_rectangle(
-            207,347,
+            207, 347,
             17, 10,
             self.down_arrow
         )
@@ -312,10 +342,10 @@ class HowTo(arcade.View):
         esc_txt_x = escape_coord_x + 25
         arcade.draw_text("ESCAPE",
                          esc_txt_x,
-                        479,
+                         479,
                          self.escape_color,
                          15,
-                         font_name = "Kenney Rocket")
+                         font_name="Kenney Rocket")
 
         # Introduction to game
         arcade.draw_text(
@@ -352,7 +382,7 @@ class HowTo(arcade.View):
                          "Attack:\t\tf\n",
                          text_p_one_x, text_p_one_y,
                          arcade.color.BLACK,
-                         10, width = 500,
+                         10, width=500,
                          multiline=True, anchor_x="center",
                          font_name="Kenney Rocket"
                          )
@@ -364,7 +394,7 @@ class HowTo(arcade.View):
                          "Left:\t\tA\n"
                          "Right:\t\tD\n"
                          "Up:\t\t\tW\n"
-                         "Attacck: PERIOD",
+                         "Attack:\t\t .",
                          text_p_two_x, text_p_two_y,
                          arcade.color.BLACK,
                          10, width=500,
@@ -385,7 +415,6 @@ class HowTo(arcade.View):
         """ Switch to the Main Menu view after a delay """
         arcade.unschedule(self.switch_main_menu)  # Stop further scheduling of this function
         self.window.show_view(MainMenu())
-
 
 
 def main():
