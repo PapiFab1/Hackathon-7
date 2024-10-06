@@ -210,6 +210,8 @@ class GameBoard(arcade.View):
         # Game over print out
         if self.game_over:
             arcade.draw_lrtb_rectangle_filled(305, 695, 295, 225, (200, 200, 200, 150))
+            arcade.draw_lrtb_rectangle_filled(125, 870, 224, 190, (200, 200, 200, 150))
+
 
             #(200, 200, 200, 150))  # Light gray with transparency
 
@@ -221,6 +223,15 @@ class GameBoard(arcade.View):
                              25,
                              font_name="Kenney Rocket",
                              anchor_x="center")
+            
+            arcade.draw_text("Press ENTER to go back to main menu",
+                             SCREEN_WIDTH // 2,
+                             200,
+                             arcade.color.BLACK,
+                             17,
+                             font_name="Kenney Rocket",
+                             anchor_x="center"
+            )
 
 
     def on_update(self, delta_time):
@@ -305,6 +316,11 @@ class GameBoard(arcade.View):
                 self.player2_has_dealt_damage = False  # Reset damage flag
 
     def on_key_press(self, key, modifiers):
+        # Go back to home screen when game is over
+        if self.game_over:
+            if key == arcade.key.ENTER:
+                self.return_to_main_menu()
+                
         # Player 2 movement and attack (Arrow keys + "O")
         if key == arcade.key.RIGHT and not self.is_player2_attacking:
             self.player2.change_x = 5
@@ -337,6 +353,11 @@ class GameBoard(arcade.View):
         # Player 1 key release
         if key in [arcade.key.D, arcade.key.A]:
             self.player1.change_x = 0
+
+    def return_to_main_menu(self):
+        """Switch to the Main Menu view"""
+        main_menu_view = MainMenu()
+        self.window.show_view(main_menu_view)
 
 
 class HowTo(arcade.View):
