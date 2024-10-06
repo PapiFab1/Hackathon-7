@@ -1,4 +1,5 @@
 import arcade
+import random
 from os import path
 
 # Defined constants for the screen size
@@ -78,6 +79,31 @@ class MainMenu(arcade.View):
         main_menu = MainMenu()
         self.window.show_view(main_menu)
 
+class Confetti:
+    def __init__(self):
+        # Set the position of the confetti randomly at the top of the screen
+        self.x = random.randint(0, SCREEN_WIDTH)
+        self.y = random.randint(SCREEN_HEIGHT, SCREEN_HEIGHT + 200)
+        # Random size for confetti rectangles (width and height)
+        self.width = random.randint(5, 10)
+        self.height = random.randint(5, 15)
+        # Random color
+        self.color = random.choice([arcade.color.RED, arcade.color.BLUE, arcade.color.YELLOW, arcade.color.GREEN, arcade.color.PURPLE])
+        # Random speed for falling
+        self.speed = random.uniform(1, 3)
+
+    def update(self):
+        # Move the confetti down
+        self.y -= self.speed
+        # If confetti goes off-screen, reset to the top
+        if self.y < 0:
+            self.y = random.randint(SCREEN_HEIGHT, SCREEN_HEIGHT + 200)
+            self.x = random.randint(0, SCREEN_WIDTH)
+            self.speed = random.uniform(1, 3)
+
+    def draw(self):
+        # Draw the confetti as a rectangle or circle
+        arcade.draw_rectangle_filled(self.x, self.y, self.width, self.height, self.color)
 
 class GameBoard(arcade.View):
     """ Main Gameplay View """
@@ -109,6 +135,7 @@ class GameBoard(arcade.View):
         self.player_icon_y = 0
         self.game_over = False
         self.winner = None
+        self.confetti_list = [Confetti() for _ in range(100)]  # Create 100 confetti particles
 
     def setup(self):
         """ Set up the main game here """
@@ -170,7 +197,7 @@ class GameBoard(arcade.View):
         # Load walking textures for player 2
         for i in range(NUM_FRAMES_WALK):
             texture = arcade.load_texture(
-                "Pirate1_walk_flip.png",  # File path for Pirate's walk spritesheet
+                "Knightro_walk_flip.png",  # File path for Pirate's walk spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
             self.player2_walk_frames.append(arcade.AnimationKeyframe(i, 85, texture))
@@ -178,7 +205,7 @@ class GameBoard(arcade.View):
         # Load attack textures for player 2
         for i in range(NUM_FRAMES_ATTACK_2):
             texture = arcade.load_texture(
-                "Pirate1_attack.png",  # File path for Pirate's attack spritesheet
+                "Knightro_attack.png",  # File path for Pirate's attack spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
             self.player2_attack_frames.append(arcade.AnimationKeyframe(i, 60, texture))
@@ -224,6 +251,11 @@ class GameBoard(arcade.View):
         arcade.draw_texture_rectangle(45, 450, 75, 75, self.player1_icon)
         arcade.draw_texture_rectangle(955, 450, 75, 75, self.player2_icon)
 
+        # If the game is over, draw the confetti
+        if self.game_over:
+            for confetti in self.confetti_list:
+                confetti.draw()
+
         # Game over print out
         if self.game_over:
             arcade.draw_lrtb_rectangle_filled(305, 695, 295, 225, (200, 200, 200, 150))
@@ -240,7 +272,13 @@ class GameBoard(arcade.View):
             # Draw the "Return to Main Menu" button
             arcade.draw_text("Press ESC to Return to Main Menu", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40, arcade.color.RED, 20, font_name="Kenney Rocket", anchor_x="center")
 
+
     def on_update(self, delta_time):
+        # If the game is over, update confetti
+        if self.game_over:
+            for confetti in self.confetti_list:
+                confetti.update()
+
         # Disable further updates and stop gravity/movement if either player is dead
         if self.player1_is_dead and not self.player1_death_animation_done:
             self.player1.change_x = 0
