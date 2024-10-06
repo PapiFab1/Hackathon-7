@@ -154,7 +154,7 @@ class GameBoard(arcade.View):
 
         # Creating Player Icons
         self.player1_icon = arcade.load_texture(path.join(DIR, "captain_icon.png"), flipped_horizontally=True)
-        self.player2_icon = arcade.load_texture(path.join(DIR, "Icons_03.png"))
+        self.player2_icon = arcade.load_texture(path.join(DIR, "Knightro_icon.png"))
 
         # Load walking textures for player 1
         for i in range(NUM_FRAMES_WALK):
@@ -212,7 +212,7 @@ class GameBoard(arcade.View):
 
         # Load death textures for player 2
         for i in range(NUM_FRAMES_ATTACK_2):  # Adjust NUM_FRAMES_ATTACK_2 to the correct number of death frames
-            texture = arcade.load_texture("Pirate1_deathflipped.png", x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH,
+            texture = arcade.load_texture("Knightro_deathflipped.png", x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH,
                                           height=FRAME_HEIGHT)
             self.player2_death_frames.append(arcade.AnimationKeyframe(i, 100, texture))
 
