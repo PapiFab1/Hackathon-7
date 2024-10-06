@@ -212,7 +212,7 @@ class GameBoard(arcade.View):
         self.player_list.draw()
         self.platform_list.draw()
 
-        # TODO: DOUBLED THE SIZE OF HEARTS AND MOVED THEM TO FIT THE PLAYER ICONS. Also got rid of the gray background
+        # Draw hearts for player 1
         for i in range(self.player1_health):
             arcade.draw_texture_rectangle(110 + i * 45, 440, 55, 45, self.heart_texture)
 
@@ -228,8 +228,6 @@ class GameBoard(arcade.View):
         if self.game_over:
             arcade.draw_lrtb_rectangle_filled(305, 695, 295, 225, (200, 200, 200, 150))
 
-            # (200, 200, 200, 150))  # Light gray with transparency
-
             # Draw the text over the transparent box
             arcade.draw_text(f"{self.winner} Wins!",
                              SCREEN_WIDTH // 2,
@@ -238,6 +236,9 @@ class GameBoard(arcade.View):
                              25,
                              font_name="Kenney Rocket",
                              anchor_x="center")
+
+            # Draw the "Return to Main Menu" button
+            arcade.draw_text("Press ESC to Return to Main Menu", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40, arcade.color.RED, 20, font_name="Kenney Rocket", anchor_x="center")
 
     def on_update(self, delta_time):
         # Disable further updates and stop gravity/movement if either player is dead
@@ -358,6 +359,10 @@ class GameBoard(arcade.View):
                 self.player2_has_dealt_damage = False  # Reset damage flag
 
     def on_key_press(self, key, modifiers):
+        # If game is over, allow return to main menu with ESC
+        if self.game_over and key == arcade.key.ESCAPE:
+            self.switch_to_main_menu()
+
         if self.player1_is_dead or self.player2_is_dead:
             return  # Disable input if either player is dead
 
@@ -386,6 +391,11 @@ class GameBoard(arcade.View):
             self.player2.frames = self.player2_attack_frames
             self.player2.cur_frame_idx = 0
             self.player2.update_animation(0)
+
+    def switch_to_main_menu(self):
+        """ Switch to the Main Menu view """
+        main_menu = MainMenu()
+        self.window.show_view(main_menu)
 
     def on_key_release(self, key, modifiers):
         # Player 2 key release
