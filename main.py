@@ -44,7 +44,7 @@ class MainMenu(arcade.View):
         )
 
         # Draw text for the game
-        arcade.draw_text("Pirate Cove", 10, 440, arcade.color.BLACK, 40, font_name="Kenney Blocks")
+        arcade.draw_text("Pirate's Cove", 10, 440, arcade.color.BLACK, 40, font_name="Kenney Blocks")
         arcade.draw_text("PLAY - B", 10, 390, self.game_start_color, 30, font_name="Kenney Blocks")
         arcade.draw_text("HOW TO PLAY - I", 10, 340, self.how_to_play_color, 30, font_name="Kenney Blocks")
 
@@ -97,6 +97,10 @@ class GameBoard(arcade.View):
         self.player2_has_dealt_damage = False  # Track if player 2 has dealt damage
         self.player1_health = 5
         self.player2_health = 5
+        self.player1_is_dead = False  # Track if player 1 is dead
+        self.player2_is_dead = False  # Track if player 2 is dead
+        self.player1_death_animation_done = False
+        self.player2_death_animation_done = False
         self.heart_texture = arcade.load_texture("heart.png")
         self.attack_damage = 1  # Damage dealt per hit
         self.heart_background_color = (0, 0, 0, 100)
@@ -119,11 +123,11 @@ class GameBoard(arcade.View):
         self.player1 = arcade.AnimatedTimeBasedSprite()
         self.player1_walk_frames = []
         self.player1_attack_frames = []
+        self.player1_death_frames = []
 
         # Creating Player Icons
         self.player1_icon = arcade.load_texture(path.join(DIR, "captain_icon.png"), flipped_horizontally=True)
         self.player2_icon = arcade.load_texture(path.join(DIR, "Icons_03.png"))
-
 
         # Load walking textures for player 1
         for i in range(NUM_FRAMES_WALK):
@@ -131,7 +135,7 @@ class GameBoard(arcade.View):
                 "Captain_walk.png",  # File path for Captain's walk spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player1_walk_frames.append(arcade.AnimationKeyframe(i, 75, texture))
+            self.player1_walk_frames.append(arcade.AnimationKeyframe(i, 85, texture))
 
         # Load attack textures for player 1
         for i in range(NUM_FRAMES_ATTACK_1):
@@ -140,6 +144,12 @@ class GameBoard(arcade.View):
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
             self.player1_attack_frames.append(arcade.AnimationKeyframe(i, 60, texture))
+
+        # Load death textures for player 1
+        for i in range(NUM_FRAMES_ATTACK_1):  # Adjust NUM_FRAMES_ATTACK_1 to the correct number of death frames
+            texture = arcade.load_texture("Captain_death.png", x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH,
+                                          height=FRAME_HEIGHT)
+            self.player1_death_frames.append(arcade.AnimationKeyframe(i, 100, texture))
 
         # Set the scaling factor to make the sprite bigger
         self.player1.scale = 2.0  # Adjust this value to change the size
@@ -155,6 +165,7 @@ class GameBoard(arcade.View):
         self.player2 = arcade.AnimatedTimeBasedSprite()
         self.player2_walk_frames = []
         self.player2_attack_frames = []
+        self.player2_death_frames = []
 
         # Load walking textures for player 2
         for i in range(NUM_FRAMES_WALK):
@@ -162,7 +173,7 @@ class GameBoard(arcade.View):
                 "Pirate1_walk_flip.png",  # File path for Pirate's walk spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player2_walk_frames.append(arcade.AnimationKeyframe(i, 75, texture))
+            self.player2_walk_frames.append(arcade.AnimationKeyframe(i, 85, texture))
 
         # Load attack textures for player 2
         for i in range(NUM_FRAMES_ATTACK_2):
@@ -171,6 +182,12 @@ class GameBoard(arcade.View):
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
             self.player2_attack_frames.append(arcade.AnimationKeyframe(i, 60, texture))
+
+        # Load death textures for player 2
+        for i in range(NUM_FRAMES_ATTACK_2):  # Adjust NUM_FRAMES_ATTACK_2 to the correct number of death frames
+            texture = arcade.load_texture("Pirate1_deathflipped.png", x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH,
+                                          height=FRAME_HEIGHT)
+            self.player2_death_frames.append(arcade.AnimationKeyframe(i, 100, texture))
 
         # Set the scaling factor to make the sprite bigger
         self.player2.scale = 2.0  # Adjust this value to change the size
@@ -195,25 +212,23 @@ class GameBoard(arcade.View):
         self.player_list.draw()
         self.platform_list.draw()
 
-        #TODO: DOUBLED THE SIZE OF HEARTS AND MOVED THEM TO FIT THE PLAYER ICONS. Also got rid of the gray background
+        # TODO: DOUBLED THE SIZE OF HEARTS AND MOVED THEM TO FIT THE PLAYER ICONS. Also got rid of the gray background
         for i in range(self.player1_health):
             arcade.draw_texture_rectangle(110 + i * 45, 440, 55, 45, self.heart_texture)
 
         # Draw hearts for player 2
         for i in range(self.player2_health):
             arcade.draw_texture_rectangle(890 - i * 45, 440, 55, 45, self.heart_texture)
-        
+
         # Drawing player icons
         arcade.draw_texture_rectangle(45, 450, 75, 75, self.player1_icon)
-        arcade.draw_texture_rectangle(955, 450, 75,75,self.player2_icon)
+        arcade.draw_texture_rectangle(955, 450, 75, 75, self.player2_icon)
 
         # Game over print out
         if self.game_over:
             arcade.draw_lrtb_rectangle_filled(305, 695, 295, 225, (200, 200, 200, 150))
-            arcade.draw_lrtb_rectangle_filled(125, 870, 224, 190, (200, 200, 200, 150))
 
-
-            #(200, 200, 200, 150))  # Light gray with transparency
+            # (200, 200, 200, 150))  # Light gray with transparency
 
             # Draw the text over the transparent box
             arcade.draw_text(f"{self.winner} Wins!",
@@ -223,31 +238,46 @@ class GameBoard(arcade.View):
                              25,
                              font_name="Kenney Rocket",
                              anchor_x="center")
-            
-            arcade.draw_text("Press ENTER to go back to main menu",
-                             SCREEN_WIDTH // 2,
-                             200,
-                             arcade.color.BLACK,
-                             17,
-                             font_name="Kenney Rocket",
-                             anchor_x="center"
-            )
-
 
     def on_update(self, delta_time):
-        self.player1.change_y -= GRAVITY
-        self.player2.change_y -= GRAVITY
+        # Disable further updates and stop gravity/movement if either player is dead
+        if self.player1_is_dead and not self.player1_death_animation_done:
+            self.player1.change_x = 0
+            self.player1.change_y = 0  # Stop gravity
+            self.player1.update_animation(delta_time)
+            if self.player1.cur_frame_idx == len(self.player1.frames) - 1:
+                self.player1_death_animation_done = True  # Freeze on the last frame
+
+        if self.player2_is_dead and not self.player2_death_animation_done:
+            self.player2.change_x = 0
+            self.player2.change_y = 0  # Stop gravity
+            self.player2.update_animation(delta_time)
+            if self.player2.cur_frame_idx == len(self.player2.frames) - 1:
+                self.player2_death_animation_done = True  # Freeze on the last frame
+
+        # If either player is dead and their animation is done, no further updates
+        if self.player1_death_animation_done or self.player2_death_animation_done:
+            return
+
+        # Apply gravity if players are alive
+        if not self.player1_is_dead:
+            self.player1.change_y -= GRAVITY
+        if not self.player2_is_dead:
+            self.player2.change_y -= GRAVITY
+
         self.player_list.update()
 
         # Manage attacks and check for damage
         self.manage_attacks(delta_time)
 
-        if not self.is_player1_attacking and self.player1.change_x != 0:
+        # Handle movement for both players if they are alive and not attacking
+        if not self.player1_is_dead and self.player1.change_x != 0 and not self.is_player1_attacking:
             self.player1.update_animation(delta_time)
 
-        if not self.is_player2_attacking and self.player2.change_x != 0:
+        if not self.player2_is_dead and self.player2.change_x != 0 and not self.is_player2_attacking:
             self.player2.update_animation(delta_time)
 
+        # Handle platform collisions
         for player in [self.player1, self.player2]:
             collisions = arcade.check_for_collision_with_list(player, self.platform_list)
             if collisions:
@@ -278,7 +308,7 @@ class GameBoard(arcade.View):
         """Handle attack logic and damage"""
 
         # Player 1 attack logic
-        if self.is_player1_attacking:
+        if self.is_player1_attacking and not self.player1_is_dead:
             self.player1_attack_time += delta_time
             self.player1.update_animation(delta_time)
 
@@ -289,6 +319,12 @@ class GameBoard(arcade.View):
                 self.player1_has_dealt_damage = True  # Mark damage as dealt
                 print(f"Player 2 hit! Health: {self.player2_health}")
 
+                # If Player 2's health is 0, trigger death animation
+                if self.player2_health == 0 and not self.player2_is_dead:
+                    self.player2.frames = self.player2_death_frames
+                    self.player2.cur_frame_idx = 0  # Start the death animation
+                    self.player2_is_dead = True
+
             # Reset after attack completes
             if self.player1_attack_time > NUM_FRAMES_ATTACK_1 * 0.1:
                 self.is_player1_attacking = False
@@ -297,7 +333,7 @@ class GameBoard(arcade.View):
                 self.player1_has_dealt_damage = False  # Reset damage flag
 
         # Player 2 attack logic
-        if self.is_player2_attacking:
+        if self.is_player2_attacking and not self.player2_is_dead:
             self.player2_attack_time += delta_time
             self.player2.update_animation(delta_time)
 
@@ -308,6 +344,12 @@ class GameBoard(arcade.View):
                 self.player2_has_dealt_damage = True  # Mark damage as dealt
                 print(f"Player 1 hit! Health: {self.player1_health}")
 
+                # If Player 1's health is 0, trigger death animation
+                if self.player1_health == 0 and not self.player1_is_dead:
+                    self.player1.frames = self.player1_death_frames
+                    self.player1.cur_frame_idx = 0  # Start the death animation
+                    self.player1_is_dead = True
+
             # Reset after attack completes
             if self.player2_attack_time > NUM_FRAMES_ATTACK_2 * 0.1:
                 self.is_player2_attacking = False
@@ -316,12 +358,23 @@ class GameBoard(arcade.View):
                 self.player2_has_dealt_damage = False  # Reset damage flag
 
     def on_key_press(self, key, modifiers):
-        # Go back to home screen when game is over
-        if self.game_over:
-            if key == arcade.key.ENTER:
-                self.return_to_main_menu()
-                
-        # Player 2 movement and attack (Arrow keys + "O")
+        if self.player1_is_dead or self.player2_is_dead:
+            return  # Disable input if either player is dead
+
+        # Player 1 movement and attack (WASD + "R")
+        if key == arcade.key.D and not self.is_player1_attacking:
+            self.player1.change_x = 5
+        elif key == arcade.key.A and not self.is_player1_attacking:
+            self.player1.change_x = -5
+        elif key == arcade.key.W and self.player1.change_y == 0:
+            self.player1.change_y = PLAYER_JUMP_SPEED
+        elif key == arcade.key.R and not self.is_player1_attacking:
+            self.is_player1_attacking = True
+            self.player1.frames = self.player1_attack_frames
+            self.player1.cur_frame_idx = 0
+            self.player1.update_animation(0)
+
+        # Player 2 movement and attack (Arrow keys + "/")
         if key == arcade.key.RIGHT and not self.is_player2_attacking:
             self.player2.change_x = 5
         elif key == arcade.key.LEFT and not self.is_player2_attacking:
@@ -331,19 +384,8 @@ class GameBoard(arcade.View):
         elif key == arcade.key.SLASH and not self.is_player2_attacking:
             self.is_player2_attacking = True
             self.player2.frames = self.player2_attack_frames
+            self.player2.cur_frame_idx = 0
             self.player2.update_animation(0)
-
-        # Player 1 movement and attack (WASD + "F")
-        if key == arcade.key.D and not self.is_player1_attacking:
-            self.player1.change_x = 5
-        elif key == arcade.key.A and not self.is_player1_attacking:
-            self.player1.change_x = -5
-        elif key == arcade.key.W and self.player1.change_y == 0:
-            self.player1.change_y = PLAYER_JUMP_SPEED
-        elif key == arcade.key.E and not self.is_player1_attacking:
-            self.is_player1_attacking = True
-            self.player1.frames = self.player1_attack_frames
-            self.player1.update_animation(0)
 
     def on_key_release(self, key, modifiers):
         # Player 2 key release
@@ -353,11 +395,6 @@ class GameBoard(arcade.View):
         # Player 1 key release
         if key in [arcade.key.D, arcade.key.A]:
             self.player1.change_x = 0
-
-    def return_to_main_menu(self):
-        """Switch to the Main Menu view"""
-        main_menu_view = MainMenu()
-        self.window.show_view(main_menu_view)
 
 
 class HowTo(arcade.View):
@@ -426,7 +463,7 @@ class HowTo(arcade.View):
 
         # Introduction to game
         arcade.draw_text(
-            "Ahoy!! This is Pirate's Cove. Where the pirate with the biggest booty "
+            "Ahoy!! This is Pirate's Cove. Where the strongest pirate "
             "is the greatest pirate of them all!\nUse whatever is at your disposal and fight other "
             "pirates to protect your treasure and pride.",
             SCREEN_WIDTH // 2,  # Center the x-coordinate based on the screen width
@@ -456,7 +493,7 @@ class HowTo(arcade.View):
                          "Left:\t\tA \n"
                          "Right:\t\tD\n"
                          "Up:\t\t\tW\n"
-                         "Attack:\t\tE",
+                         "Attack:\t\tR",
                          text_p_one_x, text_p_one_y,
                          arcade.color.BLACK,
                          10, width=500,
