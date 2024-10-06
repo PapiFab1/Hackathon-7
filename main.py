@@ -103,6 +103,8 @@ class GameBoard(arcade.View):
         self.player1_icon = None
         self.player2_icon = None
         self.player_icon_y = 0
+        self.game_over = False
+        self.winner = None
 
     def setup(self):
         """ Set up the main game here """
@@ -205,6 +207,21 @@ class GameBoard(arcade.View):
         arcade.draw_texture_rectangle(45, 450, 75, 75, self.player1_icon)
         arcade.draw_texture_rectangle(955, 450, 75,75,self.player2_icon)
 
+        # Game over print out
+        if self.game_over:
+            arcade.draw_lrtb_rectangle_filled(305, 695, 295, 225, (200, 200, 200, 150))
+
+            #(200, 200, 200, 150))  # Light gray with transparency
+
+            # Draw the text over the transparent box
+            arcade.draw_text(f"{self.winner} Wins!",
+                             SCREEN_WIDTH // 2,
+                             SCREEN_HEIGHT // 2,
+                             arcade.color.BLACK,
+                             25,
+                             font_name="Kenney Rocket",
+                             anchor_x="center")
+
 
     def on_update(self, delta_time):
         self.player1.change_y -= GRAVITY
@@ -237,6 +254,14 @@ class GameBoard(arcade.View):
             self.player2.left = 0
         if self.player2.right > 1000:
             self.player2.right = 1000
+
+        # Check if a player dies and set the game_over flag
+        if self.player1_health <= 0:
+            self.game_over = True
+            self.winner = "Player 2"
+        elif self.player2_health <= 0:
+            self.game_over = True
+            self.winner = "Player 1"
 
     def manage_attacks(self, delta_time):
         """Handle attack logic and damage"""
