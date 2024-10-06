@@ -1,5 +1,5 @@
 Before you get started:
-> Make sure you download Python (anything before version 12)
+> Make sure you download Python (anything before version 3.12)
   > Select "Install launcher for all users (recommended) and "Add Python [your version] to PATH, then either install or click "Customize Installation"
     > If you clicked "Install":
       > Reopen the installation file and select "Modify", then select all of the features, if possible
