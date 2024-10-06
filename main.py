@@ -129,10 +129,13 @@ class GameBoard(arcade.View):
             )
             self.player1_attack_frames.append(arcade.AnimationKeyframe(i, 100, texture))
 
+        # Set the scaling factor to make the sprite bigger
+        self.player1.scale = 1.7  # Adjust this value to change the size
+
         self.player1.frames = self.player1_walk_frames
         self.player1.texture = self.player1.frames[0].texture
         self.player1.set_hit_box(self.player1.texture.hit_box_points)
-        self.player1.center_x = 100
+        self.player1.center_x = 350
         self.player1.center_y = 200
         self.player_list.append(self.player1)
 
@@ -157,10 +160,13 @@ class GameBoard(arcade.View):
             )
             self.player2_attack_frames.append(arcade.AnimationKeyframe(i, 100, texture))
 
+        # Set the scaling factor to make the sprite bigger
+        self.player2.scale = 1.7  # Adjust this value to change the size
+
         self.player2.frames = self.player2_walk_frames
         self.player2.texture = self.player2.frames[0].texture
         self.player2.set_hit_box(self.player2.texture.hit_box_points)
-        self.player2.center_x = 200
+        self.player2.center_x = 650
         self.player2.center_y = 200
         self.player_list.append(self.player2)
 
