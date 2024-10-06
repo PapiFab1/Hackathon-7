@@ -99,8 +99,10 @@ class GameBoard(arcade.View):
         self.player2_health = 5
         self.heart_texture = arcade.load_texture("heart.png")
         self.attack_damage = 1  # Damage dealt per hit
-        self.heart_background_color = arcade.color.LIGHT_GRAY  # Background color for hearts
-
+        self.heart_background_color = (0, 0, 0, 100)
+        self.player1_icon = None
+        self.player2_icon = None
+        self.player_icon_y = 0
 
     def setup(self):
         """ Set up the main game here """
@@ -115,6 +117,11 @@ class GameBoard(arcade.View):
         self.player1 = arcade.AnimatedTimeBasedSprite()
         self.player1_walk_frames = []
         self.player1_attack_frames = []
+
+        # Creating Player Icons
+        self.player1_icon = arcade.load_texture(path.join(DIR, "captain_icon.png"), flipped_horizontally=True)
+        self.player2_icon = arcade.load_texture(path.join(DIR, "Icons_03.png"))
+
 
         # Load walking textures for player 1
         for i in range(NUM_FRAMES_WALK):
@@ -186,14 +193,17 @@ class GameBoard(arcade.View):
         self.player_list.draw()
         self.platform_list.draw()
 
-        # Draw hearts for player 1
+        #TODO: DOUBLED THE SIZE OF HEARTS AND MOVED THEM TO FIT THE PLAYER ICONS. Also got rid of the gray background
         for i in range(self.player1_health):
-            arcade.draw_rectangle_filled(25 + i * 30, 400, 30, 30, self.heart_background_color)
-            arcade.draw_texture_rectangle(25 + i * 30, 400, 25, 25, self.heart_texture)
+            arcade.draw_texture_rectangle(110 + i * 45, 440, 55, 45, self.heart_texture)
+
         # Draw hearts for player 2
         for i in range(self.player2_health):
-            arcade.draw_rectangle_filled(975 - i * 30, 400, 30, 30, self.heart_background_color)
-            arcade.draw_texture_rectangle(975 - i * 30, 400, 25, 25, self.heart_texture)
+            arcade.draw_texture_rectangle(890 - i * 45, 440, 55, 45, self.heart_texture)
+        
+        # Drawing player icons
+        arcade.draw_texture_rectangle(45, 450, 75, 75, self.player1_icon)
+        arcade.draw_texture_rectangle(955, 450, 75,75,self.player2_icon)
 
 
     def on_update(self, delta_time):
