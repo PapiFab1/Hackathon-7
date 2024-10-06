@@ -93,11 +93,14 @@ class GameBoard(arcade.View):
         self.is_player2_attacking = False
         self.player1_attack_time = 0
         self.player2_attack_time = 0
-        self.player1_health = 100  # Health variable for player 1
-        self.player2_health = 100  # Health variable for player 2
-        self.attack_damage = 10  # Damage dealt during an attack
         self.player1_has_dealt_damage = False  # Track if player 1 has dealt damage
         self.player2_has_dealt_damage = False  # Track if player 2 has dealt damage
+        self.player1_health = 5
+        self.player2_health = 5
+        self.heart_texture = arcade.load_texture("heart.png")
+        self.attack_damage = 1  # Damage dealt per hit
+        self.heart_background_color = arcade.color.LIGHT_GRAY  # Background color for hearts
+
 
     def setup(self):
         """ Set up the main game here """
@@ -183,6 +186,16 @@ class GameBoard(arcade.View):
         self.player_list.draw()
         self.platform_list.draw()
 
+        # Draw hearts for player 1
+        for i in range(self.player1_health):
+            arcade.draw_rectangle_filled(25 + i * 30, 400, 30, 30, self.heart_background_color)
+            arcade.draw_texture_rectangle(25 + i * 30, 400, 25, 25, self.heart_texture)
+        # Draw hearts for player 2
+        for i in range(self.player2_health):
+            arcade.draw_rectangle_filled(975 - i * 30, 400, 30, 30, self.heart_background_color)
+            arcade.draw_texture_rectangle(975 - i * 30, 400, 25, 25, self.heart_texture)
+
+
     def on_update(self, delta_time):
         self.player1.change_y -= GRAVITY
         self.player2.change_y -= GRAVITY
@@ -225,7 +238,8 @@ class GameBoard(arcade.View):
 
             # Check if Player 1 hit Player 2
             if arcade.check_for_collision(self.player1, self.player2) and not self.player1_has_dealt_damage:
-                self.player2_health -= self.attack_damage
+                self.player2_health -= self.attack_damage 
+                self.player2_health = max(0, self.player2_health)
                 self.player1_has_dealt_damage = True  # Mark damage as dealt
                 print(f"Player 2 hit! Health: {self.player2_health}")
 
@@ -244,6 +258,7 @@ class GameBoard(arcade.View):
             # Check if Player 2 hit Player 1
             if arcade.check_for_collision(self.player2, self.player1) and not self.player2_has_dealt_damage:
                 self.player1_health -= self.attack_damage
+                self.player1_health = max(0, self.player1_health)
                 self.player2_has_dealt_damage = True  # Mark damage as dealt
                 print(f"Player 1 hit! Health: {self.player1_health}")
 
