@@ -10,4 +10,3 @@ Before you get started:
   - Open the Python terminal and type "pip install arcade" (no quotes)
 
 We used PyCharm by JetBrains to run arcade and our python code.
-Thanks!
