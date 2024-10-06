@@ -122,7 +122,7 @@ class GameBoard(arcade.View):
                 "Captain_walk.png",  # File path for Captain's walk spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player1_walk_frames.append(arcade.AnimationKeyframe(i, 100, texture))
+            self.player1_walk_frames.append(arcade.AnimationKeyframe(i, 75, texture))
 
         # Load attack textures for player 1
         for i in range(NUM_FRAMES_ATTACK_1):
@@ -130,7 +130,7 @@ class GameBoard(arcade.View):
                 "Captain_attack1.png",  # File path for Captain's attack spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player1_attack_frames.append(arcade.AnimationKeyframe(i, 100, texture))
+            self.player1_attack_frames.append(arcade.AnimationKeyframe(i, 60, texture))
 
         # Set the scaling factor to make the sprite bigger
         self.player1.scale = 1.7  # Adjust this value to change the size
@@ -153,7 +153,7 @@ class GameBoard(arcade.View):
                 "Pirate1_walk_flip.png",  # File path for Pirate's walk spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player2_walk_frames.append(arcade.AnimationKeyframe(i, 100, texture))
+            self.player2_walk_frames.append(arcade.AnimationKeyframe(i, 75, texture))
 
         # Load attack textures for player 2
         for i in range(NUM_FRAMES_ATTACK_2):
@@ -161,7 +161,7 @@ class GameBoard(arcade.View):
                 "Pirate1_attack.png",  # File path for Pirate's attack spritesheet
                 x=i * FRAME_WIDTH, y=0, width=FRAME_WIDTH, height=FRAME_HEIGHT
             )
-            self.player2_attack_frames.append(arcade.AnimationKeyframe(i, 100, texture))
+            self.player2_attack_frames.append(arcade.AnimationKeyframe(i, 60, texture))
 
         # Set the scaling factor to make the sprite bigger
         self.player2.scale = 1.7  # Adjust this value to change the size
@@ -238,7 +238,7 @@ class GameBoard(arcade.View):
 
             # Check if Player 1 hit Player 2
             if arcade.check_for_collision(self.player1, self.player2) and not self.player1_has_dealt_damage:
-                self.player2_health -= self.attack_damage 
+                self.player2_health -= self.attack_damage
                 self.player2_health = max(0, self.player2_health)
                 self.player1_has_dealt_damage = True  # Mark damage as dealt
                 print(f"Player 2 hit! Health: {self.player2_health}")
@@ -277,7 +277,7 @@ class GameBoard(arcade.View):
             self.player2.change_x = -5
         elif key == arcade.key.UP and self.player2.change_y == 0:
             self.player2.change_y = PLAYER_JUMP_SPEED
-        elif key == arcade.key.PERIOD and not self.is_player2_attacking:
+        elif key == arcade.key.SLASH and not self.is_player2_attacking:
             self.is_player2_attacking = True
             self.player2.frames = self.player2_attack_frames
             self.player2.update_animation(0)
@@ -289,7 +289,7 @@ class GameBoard(arcade.View):
             self.player1.change_x = -5
         elif key == arcade.key.W and self.player1.change_y == 0:
             self.player1.change_y = PLAYER_JUMP_SPEED
-        elif key == arcade.key.F and not self.is_player1_attacking:
+        elif key == arcade.key.E and not self.is_player1_attacking:
             self.is_player1_attacking = True
             self.player1.frames = self.player1_attack_frames
             self.player1.update_animation(0)
@@ -397,10 +397,10 @@ class HowTo(arcade.View):
 
         # Player 1 controls
         arcade.draw_text("Player 1\n"
-                         "Left:\t\t< \n"
-                         "Right:\t\t>\n"
-                         "Up:\t\t\t^\n"
-                         "Attack:\t\tf\n",
+                         "Left:\t\tA \n"
+                         "Right:\t\tD\n"
+                         "Up:\t\t\tW\n"
+                         "Attack:\t\tE",
                          text_p_one_x, text_p_one_y,
                          arcade.color.BLACK,
                          10, width=500,
@@ -412,10 +412,10 @@ class HowTo(arcade.View):
         text_p_two_y = 280
         # Player 2 controls
         arcade.draw_text("Player 2\n"
-                         "Left:\t\tA\n"
-                         "Right:\t\tD\n"
-                         "Up:\t\t\tW\n"
-                         "Attack:\t\t .",
+                         "Left:\t\t< \n"
+                         "Right:\t\t>\n"
+                         "Up:\t\t\t^\n"
+                         "Attack:\t\t/\n",
                          text_p_two_x, text_p_two_y,
                          arcade.color.BLACK,
                          10, width=500,
